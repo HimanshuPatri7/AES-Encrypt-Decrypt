@@ -263,6 +263,11 @@ def upload_dav():
 
 def main():
     #buffer_size = 65536 # 64kb
+
+    if (input("Are the asymmetric keys keys generated\n"))=='N' or 'n':
+        print("Generate RSA keys before running this")
+        exit()
+
     
     while True:
         case=int(input("Enter the action to be performed:\n1:Sign And Encrypt File\n2:Decrypt and Verify Signature\n3:Access Cloud Server\n4:Exit\n"))
@@ -279,6 +284,8 @@ def main():
 
 if os.path.isfile('log.txt'):
     os.remove('log.txt')
+
+
 warnings.filterwarnings("ignore")
 main()
 
