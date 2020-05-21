@@ -16,6 +16,7 @@ import struct
 salt=b'\xa4iZ\x98\x86\\\xd0Q\x1e\xfe\x85\nPe2s\x01\xc3\xde\x9c8\xe02\xef\x97\xb4\x133\x9a\xdf\xefk'
 
 def aes_decrypt(file_to_decrypt,buffer_size=65536):
+
     value=input("Is the key stored in a file? (Y/N)\n")
     
     if value=="y" or value=="Y":
@@ -28,7 +29,7 @@ def aes_decrypt(file_to_decrypt,buffer_size=65536):
     else:
         password=input("Enter the key\n")
         key = PBKDF2(password,salt, dkLen=32)
-    
+        
     st=time.time()
     input_file = open(file_to_decrypt + '.encrypted', 'rb')
     output_file = open(file_to_decrypt + '.decrypted', 'wb')
@@ -146,6 +147,7 @@ def sign(input_file):
     
     return(signature)
 
+
 def verify_sign(input_file,buffer=65536):
     f1 = open('./public_key.pem', 'rb')
     pubKey = RSA.importKey(f1.read()) 
@@ -201,7 +203,6 @@ def decrypt_verify():
     else:
         print("The file does not exist!!!\n")
 
-    
 
 def upload_dav():
     options = {
@@ -241,10 +242,13 @@ def upload_dav():
             client.download_sync(path_2, path_2)
             client.download_sync(path_3, path_3)
             e_time=time.time()
+            t=e_time-s_time
+            with open('log.txt','w') as log:
+                log.write('Time taken to download all files'+str(t)[:5])
             print("Downloaded, Time taken is",e_time-s_time)
         elif opt==5:
             file=input("Enter file to upload with public key and signature\n")
-            path_1=file+'.encrypted'
+            path_1=file+'.encrypted' 
             path_2=file+'.sign'
             path_3='public_key.pem'
             
@@ -253,12 +257,13 @@ def upload_dav():
             client.upload_sync(path_2, path_2)
             client.upload_sync(path_3, path_3)
             e_time=time.time()
+            with open('log.txt','w') as log:
+                log.write('Time taken to upload all files'+str(t)[:5])
             print("Uplaoded, Time taken is",e_time-s_time)
         else:
             print("\nInvalid Option\n")
     except WebDavException as exception:
         print("\n\n",exception,"\n\n")
-
 
 
 def main():
@@ -282,8 +287,8 @@ def main():
         else: 
             print("\nInvalid Option")
 
-if os.path.isfile('log.txt'):
-    os.remove('log.txt')
+""" if os.path.isfile('log.txt'):
+    os.remove('log.txt') """
 
 
 warnings.filterwarnings("ignore")
