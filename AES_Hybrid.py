@@ -9,9 +9,12 @@ import hashlib,sys
 from webdav3.client import Client
 import time
 import warnings
-from webdav3.client import WebDavException
+from weddavexception import WebDavException
 import os
 import struct
+from tkinter import Tk
+from tkinter.filedialog import askopenfilename
+import tkinter as tk
 
 salt=b'\xa4iZ\x98\x86\\\xd0Q\x1e\xfe\x85\nPe2s\x01\xc3\xde\x9c8\xe02\xef\x97\xb4\x133\x9a\xdf\xefk'
 
@@ -173,7 +176,9 @@ def verify_sign(input_file,buffer=65536):
         print("The signature is not authentic!!!!!\nThe file has been modified.")    
     
 def sign_encrypt():
-    input_file = input("Enter the name of the file to be Signed and Encrypted\n")
+    Tk().withdraw()
+    #input_file = input("Enter the name of the file to be Signed and Encrypted\n") #Replaced with GUI
+    input_file = askopenfilename()
     if os.path.isfile(input_file):
         password=input("Enter key for encrytion\n")
         
@@ -196,7 +201,8 @@ def sign_encrypt():
         
 
 def decrypt_verify():
-    input_file = input("Enter the name of the file to be Decrypted and Verified\n")
+    
+    input_file = input("Enter the name of the file to be decrypted\n")
     if os.path.exists(input_file):
         aes_decrypt(input_file)
         verify_sign(input_file)
@@ -204,88 +210,143 @@ def decrypt_verify():
         print("The file does not exist!!!\n")
 
 
-def upload_dav():
-    options = {
-    'webdav_hostname': "https://192.168.1.11/remote.php/dav/files/root/",
-    'webdav_login':    "root",
-    'webdav_password': "root",
-    'verbose':True
-    }
+def GUI():
 
-    client = Client(options)
-    client.verify = False
+    root=tk.Tk()
+
+    def fetch():
+
+        ip=ip_entry.get()
+        name=name_entry.get()
+        password=password_entry.get()
+        return ip,name,password
+
+    ip=tk.StringVar()
+    name=tk.StringVar()
+    password=tk.StringVar()
+
+    ip_l = tk.Label(root, text = 'IP Address')
+    name_l = tk.Label(root, text = 'Username')
+    password_l = tk.Label(root, text = 'Password')
+
+    ip_entry = tk.Entry(root,textvariable = ip)
+    name_entry = tk.Entry(root,textvariable = name)
+    password_entry = tk.Entry(root,textvariable = password)
+
+    sub_btn=tk.Button(root,text = 'Submit',command = fetch()) 
+
+    ip_l.grid(row=0,column=0)
+    ip_entry.grid(row=0,column=1)
+    name_l.grid(row=1,column=0)
+    name_entry.grid(row=1,column=1)
+    password_l.grid(row=2,column=0)
+    password_entry.grid(row=2,column=1)
+    sub_btn.grid(row=3,column=1)
+
+    root.mainloop()
+
+    return ip,name,password
+
+def upload_dav():
+
     
-   
+
+    
+    
     try:
-        print("###############################\n###############################")
-        opt=int(input("Choose action to be performed:\n1:Show all files\n2:Make Directory\n3:Delete\n4:Download file\n5:Upload File\n"))
-        if opt==1:
+        
+        options = {
+        'webdav_hostname': "https://192.168.1.4/remote.php/dav/files/clouduser/",
+        'webdav_login':    "clouduser",
+        'webdav_password': "root",
+        'verbose':True
+        }
+        conn=False
+        client = Client(options)
+        client.verify = False
+        try:
+            if(client.list()):
+                print('\n' * 4)
+                print("Connection Successfull")
+                conn=True
+                print('\n' * 3)
+        except:
+            print('\n' * 4)
+            print("Connection error. Check credentials")
             
-            files=client.list()
-            print(files)
-        elif opt==2:
-            d=input("Enter directory name\n")
-            if client.mkdir(d):
-                print("Created Successfully")
-        elif opt==3:
-            d=input("Enter directory or file name\n")
-            client.clean(d)
-            print("Deleted")
-        elif opt==4:
-            file=input("Enter file to download with public key and signature\n")
-            path_1=file+'.encrypted'
-            path_2=file+'.sign'
-            path_3='public_key.pem'
             
-            s_time=time.time()
-            client.download_sync(path_1, path_1)
-            client.download_sync(path_2, path_2)
-            client.download_sync(path_3, path_3)
-            e_time=time.time()
-            t=e_time-s_time
-            with open('log.txt','w') as log:
-                log.write('Time taken to download all files'+str(t)[:5])
-            print("Downloaded, Time taken is",e_time-s_time)
-        elif opt==5:
-            file=input("Enter file to upload with public key and signature\n")
-            path_1=file+'.encrypted' 
-            path_2=file+'.sign'
-            path_3='public_key.pem'
             
-            s_time=time.time()
-            client.upload_sync(path_1, path_1)
-            client.upload_sync(path_2, path_2)
-            client.upload_sync(path_3, path_3)
-            e_time=time.time()
-            with open('log.txt','w') as log:
-                log.write('Time taken to upload all files'+str(t)[:5])
-            print("Uplaoded, Time taken is",e_time-s_time)
-        else:
-            print("\nInvalid Option\n")
+        if conn:
+            print("##############################################################")
+            opt=int(input("Choose action to be performed:\n1:Show all files\n2:Make Directory\n3:Delete\n4:Download file\n5:Upload File\n"))
+            if opt==1:
+                
+                files=client.list()
+                print(files)
+            elif opt==2:
+                d=input("Enter directory name\n")
+                if client.mkdir(d):
+                    print("Created Successfully")
+            elif opt==3:
+                d=input("Enter directory or file name\n")
+                client.clean(d)
+                print("Deleted")
+            elif opt==4:
+                file=input("Enter file to download with public key and signature\n")
+                path_1=file+'.encrypted'
+                path_2=file+'.sign'
+                path_3='public_key.pem'
+                
+                s_time=time.time()
+                client.download_sync(path_1, path_1)
+                client.download_sync(path_2, path_2)
+                client.download_sync(path_3, path_3)
+                e_time=time.time()
+                t=e_time-s_time
+                with open('log.txt','w') as log:
+                    log.write('Time taken to download all files'+str(t)[:5])
+                print("Downloaded, Time taken is",e_time-s_time)
+            elif opt==5:
+                file=input("Enter file to upload with public key and signature\n")
+                path_1=file+'.encrypted' 
+                path_2=file+'.sign'
+                path_3='public_key.pem'
+                
+                s_time=time.time()
+                client.upload_sync(path_1, path_1)
+                client.upload_sync(path_2, path_2)
+                client.upload_sync(path_3, path_3)
+                e_time=time.time()
+                with open('log.txt','w') as log:
+                    log.write('Time taken to upload all files'+str(t)[:5])
+                print("Uplaoded, Time taken is",e_time-s_time)
+            else:
+                None
     except WebDavException as exception:
-        print("\n\n",exception,"\n\n")
+            print("\n\n",exception,"\n\n")
 
 
 def main():
     #buffer_size = 65536 # 64kb
 
-    if (input("Are the asymmetric keys keys generated\n"))=='N' or 'n':
-        print("Generate RSA keys before running this")
+    if (input("Are the keys generated?")=='N'):
+        print("Generate keys first")
         exit()
 
-    
-    while True:
-        case=int(input("Enter the action to be performed:\n1:Sign And Encrypt File\n2:Decrypt and Verify Signature\n3:Access Cloud Server\n4:Exit\n"))
-        if case == 1:
-            sign_encrypt()
-        elif case == 2:
-            decrypt_verify()
-        elif case == 3:
-            upload_dav()
-        elif case == 4:
-            break
-        else: 
-            print("\nInvalid Option")
+
+    else:
+        while True:
+            case=int(input("\n"*5+"Enter the action to be performed:\n1:Sign And Encrypt File\n2:Decrypt and Verify Signature\n3:Access Cloud Server\n4:Exit\n"))
+            if case == 1:
+                sign_encrypt()
+            elif case == 2:
+                decrypt_verify()
+            elif case == 3:
+                upload_dav()
+            elif case == 4:
+                break
+            else: 
+                print("\nInvalid Option")
 
 """ if os.path.isfile('log.txt'):
     os.remove('log.txt') """
