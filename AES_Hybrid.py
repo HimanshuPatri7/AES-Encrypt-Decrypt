@@ -176,9 +176,8 @@ def verify_sign(input_file,buffer=65536):
         print("The signature is not authentic!!!!!\nThe file has been modified.")    
     
 def sign_encrypt():
-    Tk().withdraw()
     #input_file = input("Enter the name of the file to be Signed and Encrypted\n") #Replaced with GUI
-    input_file = askopenfilename()
+    input_file = input("Enter the name of the file to be encrypted\n")
     if os.path.isfile(input_file):
         password=input("Enter key for encrytion\n")
         
@@ -214,17 +213,11 @@ def GUI():
 
     root=tk.Tk()
 
-    def fetch():
-
-        ip=ip_entry.get()
-        name=name_entry.get()
-        password=password_entry.get()
-        return ip,name,password
-
     ip=tk.StringVar()
     name=tk.StringVar()
     password=tk.StringVar()
-
+    
+    
     ip_l = tk.Label(root, text = 'IP Address')
     name_l = tk.Label(root, text = 'Username')
     password_l = tk.Label(root, text = 'Password')
@@ -233,7 +226,7 @@ def GUI():
     name_entry = tk.Entry(root,textvariable = name)
     password_entry = tk.Entry(root,textvariable = password)
 
-    sub_btn=tk.Button(root,text = 'Submit',command = fetch()) 
+    sub_btn=tk.Button(root,text = 'Submit',command = root.destroy()) 
 
     ip_l.grid(row=0,column=0)
     ip_entry.grid(row=0,column=1)
@@ -243,6 +236,11 @@ def GUI():
     password_entry.grid(row=2,column=1)
     sub_btn.grid(row=3,column=1)
 
+
+    ip=ip_entry.get()
+    name=name_entry.get()
+    password=password_entry.get()
+
     root.mainloop()
 
     return ip,name,password
@@ -250,13 +248,10 @@ def GUI():
 def upload_dav():
 
     
-
-    
-    
     try:
         
         options = {
-        'webdav_hostname': "https://192.168.1.4/remote.php/dav/files/clouduser/",
+        'webdav_hostname': "https://192.168.1.6/remote.php/dav/files/clouduser/",
         'webdav_login':    "clouduser",
         'webdav_password': "root",
         'verbose':True
@@ -293,6 +288,7 @@ def upload_dav():
                 print("Deleted")
             elif opt==4:
                 file=input("Enter file to download with public key and signature\n")
+                
                 path_1=file+'.encrypted'
                 path_2=file+'.sign'
                 path_3='public_key.pem'
@@ -303,8 +299,7 @@ def upload_dav():
                 client.download_sync(path_3, path_3)
                 e_time=time.time()
                 t=e_time-s_time
-                with open('log.txt','w') as log:
-                    log.write('Time taken to download all files'+str(t)[:5])
+                
                 print("Downloaded, Time taken is",e_time-s_time)
             elif opt==5:
                 file=input("Enter file to upload with public key and signature\n")
@@ -317,8 +312,7 @@ def upload_dav():
                 client.upload_sync(path_2, path_2)
                 client.upload_sync(path_3, path_3)
                 e_time=time.time()
-                with open('log.txt','w') as log:
-                    log.write('Time taken to upload all files'+str(t)[:5])
+                
                 print("Uplaoded, Time taken is",e_time-s_time)
             else:
                 None
@@ -329,12 +323,13 @@ def upload_dav():
 def main():
     #buffer_size = 65536 # 64kb
 
-    if (input("Are the keys generated?")=='N'):
+    k=input("Are the keys generated?")
+    if (k=='n'):
         print("Generate keys first")
         exit()
 
 
-    else:
+    elif(k=='y'):
         while True:
             case=int(input("\n"*5+"Enter the action to be performed:\n1:Sign And Encrypt File\n2:Decrypt and Verify Signature\n3:Access Cloud Server\n4:Exit\n"))
             if case == 1:
