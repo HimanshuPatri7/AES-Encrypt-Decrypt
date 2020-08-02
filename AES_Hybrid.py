@@ -168,6 +168,8 @@ def verify_sign(input_file,buffer=65536):
     h=SHA.new()     
     h.update((file_hash.hexdigest()).encode('utf-8'))
     verifier= PKCS.new(pubKey)
+    if(input("Do you want to use a different signature?\n")=='y'):
+    	input_file=input("Enter the signature file.\n")
     with open(input_file+'.sign','rb') as fin:
         signature=fin.read(buffer)
     if verifier.verify(h,signature):
