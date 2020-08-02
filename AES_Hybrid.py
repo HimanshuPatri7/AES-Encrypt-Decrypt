@@ -169,7 +169,10 @@ def verify_sign(input_file,buffer=65536):
     h.update((file_hash.hexdigest()).encode('utf-8'))
     verifier= PKCS.new(pubKey)
     if(input("Do you want to use a different signature?\n")=='y'):
-    	input_file=input("Enter the signature file.\n")
+        input_file=input("Enter the signature.\n")
+        if not(os.path.isfile(input_file)):
+            print("File does not exist.")
+            return False
     with open(input_file+'.sign','rb') as fin:
         signature=fin.read(buffer)
     if verifier.verify(h,signature):
@@ -204,7 +207,7 @@ def sign_encrypt():
 def decrypt_verify():
     
     input_file = input("Enter the name of the file to be decrypted\n")
-    if os.path.exists(input_file):
+    if os.path.exists(input_file+'.encrypted'):
         aes_decrypt(input_file)
         verify_sign(input_file)
     else:
